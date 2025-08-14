@@ -1,0 +1,41 @@
+.footer-3d {
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  padding: 1rem 2rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.369);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+
+.footer-3d p {
+  font-size: 1.7rem;
+  font-weight: 550;
+  color: rgb(90, 180, 253) !important;
+}
+
+
+/* Change text selection color and background */
+::selection {
+  background-color: #61bbff;
+  color: white; 
+}
+
+/* For Firefox */
+::-moz-selection {
+  background-color: #61bbff;
+  color: white;
+}

@@ -1,0 +1,86 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #0a192f; /* deep navy background */
+  overflow: hidden;
+}
+
+/* Container for glow circles */
+.circle-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Neon glow circles */
+.App::before,
+.App::after,
+.circle-container::before,
+.circle-container::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.6;
+  z-index: 0;
+  animation: pulseMove 6s ease-in-out infinite;
+}
+
+/* Top-left neon cyan */
+.App::before {
+  width: 400px;
+  height: 400px;
+  background: rgba(0, 255, 255, 0.8); /* neon cyan */
+  top: -150px;
+  left: -150px;
+  animation-delay: 0s;
+}
+
+/* Bottom-right neon magenta */
+.App::after {
+  width: 500px;
+  height: 500px;
+  background: rgba(255, 0, 150, 0.8); /* neon magenta */
+  bottom: -200px;
+  right: -200px;
+  animation-delay: 3s;
+}
+
+/* Top-right electric purple */
+.circle-container::before {
+  width: 350px;
+  height: 350px;
+  background: rgba(138, 43, 226, 0.8); /* electric purple */
+  top: -130px;
+  right: -130px;
+  animation-delay: 1.5s;
+}
+
+/* Bottom-left neon blue */
+.circle-container::after {
+  width: 450px;
+  height: 450px;
+  background: rgba(0, 100, 255, 0.8); /* neon blue */
+  bottom: -180px;
+  left: -180px;
+  animation-delay: 4.5s;
+}
+
+@keyframes pulseMove {
+  0%   { transform: translate(0px, 0px) scale(1); opacity: 0.6; }
+  25%  { transform: translate(50px, -30px) scale(1.1); opacity: 0.8; }
+  50%  { transform: translate(-40px, 50px) scale(1.05); opacity: 0.7; }
+  75%  { transform: translate(30px, -50px) scale(1.08); opacity: 0.85; }
+  100% { transform: translate(0px, 0px) scale(1); opacity: 0.6; }
+}
+
+.App > * {
+  position: relative;
+  z-index: 1;
+}
