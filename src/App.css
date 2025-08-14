@@ -7,6 +7,15 @@
   overflow: hidden;
 }
 
+html, body {
+  height: 100%;
+}
+
+.App {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
 /* Container for glow circles */
 .circle-container {
   position: absolute;
