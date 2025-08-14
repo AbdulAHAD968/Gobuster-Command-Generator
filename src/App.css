@@ -32,41 +32,41 @@
   animation: pulseMove 6s ease-in-out infinite;
 }
 
-/* Top-left neon cyan */
+/* Top-left neon green */
 .App::before {
   width: 400px;
   height: 400px;
-  background: rgba(0, 255, 255, 0.8); /* neon cyan */
+  background: rgba(0, 255, 100, 0.8); /* neon green */
   top: -150px;
   left: -150px;
   animation-delay: 0s;
 }
 
-/* Bottom-right neon magenta */
+/* Bottom-right hot orange */
 .App::after {
   width: 500px;
   height: 500px;
-  background: rgba(255, 0, 150, 0.8); /* neon magenta */
+  background: rgba(255, 100, 0, 0.8); /* hot orange */
   bottom: -200px;
   right: -200px;
   animation-delay: 3s;
 }
 
-/* Top-right electric purple */
+/* Top-right electric blue */
 .circle-container::before {
   width: 350px;
   height: 350px;
-  background: rgba(138, 43, 226, 0.8); /* electric purple */
+  background: rgba(0, 150, 255, 0.8); /* electric blue */
   top: -130px;
   right: -130px;
   animation-delay: 1.5s;
 }
 
-/* Bottom-left neon blue */
+/* Bottom-left golden yellow */
 .circle-container::after {
   width: 450px;
   height: 450px;
-  background: rgba(0, 100, 255, 0.8); /* neon blue */
+  background: rgba(255, 215, 0, 0.8); /* golden yellow */
   bottom: -180px;
   left: -180px;
   animation-delay: 4.5s;

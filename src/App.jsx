@@ -10,6 +10,7 @@ import './App.css';
 import '../src/styles/ip-input.css';
 import '../src/styles/footer.css';
 import '../src/styles/NotFound.css';
+import '../src/styles/AdvanceMode.css'
 
 function App() {
   return (

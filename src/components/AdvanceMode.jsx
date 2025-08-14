@@ -1,12 +1,31 @@
-import { useState, useEffect, useRef } from 'react';
-import { FaCopy, FaInfoCircle, FaChevronDown, FaChevronUp, FaFileUpload } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaCopy, FaInfoCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { createPortal } from 'react-dom';
+import '../styles/AdvanceMode.css';
 
 const Tooltip = ({ text, position }) => {
   if (!position) return null;
 
   return createPortal(
-    <div className="tooltip-portal">
+    <div
+      className="tooltip-portal"
+      style={{
+        top: position.top,
+        left: position.left,
+        transform: 'translateX(-50%)',
+        maxWidth: '250px',
+        wordWrap: 'break-word',
+        zIndex: 9999,
+        backgroundColor: '#112240',
+        color: '#e6f1ff',
+        padding: '8px',
+        borderRadius: '5px',
+        fontSize: '14px',
+        pointerEvents: 'none',
+        position: 'absolute',
+        border: '1px solid #64ffda'
+      }}
+    >
       {text}
     </div>,
     document.body
@@ -35,21 +54,26 @@ const AdvancedMode = () => {
   const [notification, setNotification] = useState('');
   const [tooltip, setTooltip] = useState({ text: "", position: null });
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const [fileName, setFileName] = useState('');
-  const fileInputRef = useRef(null);
 
   const gobusterWordlists = {
+    // Dirb
     dirbCommon: '/usr/share/wordlists/dirb/common.txt',
     dirbSmall: '/usr/share/wordlists/dirb/small.txt',
+
+    // Dirbuster
     dirbusterSmall: '/usr/share/wordlists/dirbuster/directory-list-1.0.txt',
     dirbusterMedium: '/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt',
     dirbusterLarge: '/usr/share/wordlists/dirbuster/directory-list-2.3-big.txt',
+
+    // SecLists - Web Content
     seclistsCommon: '/usr/share/seclists/Discovery/Web-Content/common.txt',
     seclistsBig: '/usr/share/seclists/Discovery/Web-Content/big.txt',
     seclistsMedium: '/usr/share/seclists/Discovery/Web-Content/medium.txt',
     seclistsCGI: '/usr/share/seclists/Discovery/Web-Content/CGIs.txt',
     seclistsAdminPanels: '/usr/share/seclists/Discovery/Web-Content/admin-panels.txt',
     seclistsExtensions: '/usr/share/seclists/Discovery/Web-Content/extensions-common.txt',
+
+    // API & Special Targets
     apiCommon: '/usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt',
     joomla: '/usr/share/seclists/Discovery/Web-Content/CMS/joomla.txt',
     wordpress: '/usr/share/seclists/Discovery/Web-Content/CMS/wordpress.txt'
@@ -64,28 +88,52 @@ const AdvancedMode = () => {
   ]);
 
   const generateCommand = () => {
-    let cmd = 'gobuster dir';
+    let cmd = 'gobuster';
+
+    // Mode selection (dir/vhost/dns)
+    cmd += ' dir'; // Default to directory brute-forcing
+
+    // Required parameters
     if (!target) {
       setCommand('');
       return;
     }
-    
     cmd += ` -u ${target}`;
-    cmd += customWordlist ? ` -w ${customWordlist}` : wordlist ? ` -w ${wordlist}` : '';
-    if (!customWordlist && !wordlist) {
+
+    // Wordlist selection
+    if (customWordlist) {
+      cmd += ` -w ${customWordlist}`;
+    } else if (wordlist) {
+      cmd += ` -w ${wordlist}`;
+    } else {
       setCommand('');
       return;
     }
 
-    if (extensions) cmd += ` -x ${extensions}`;
+    // Extensions
+    if (extensions) {
+      cmd += ` -x ${extensions}`;
+    }
+
+    // Performance options
     cmd += ` -t ${threads}`;
     cmd += ` --timeout ${timeout}s`;
-    if (statusCodes) cmd += ` -s ${statusCodes}`;
-    if (hideCodes) cmd += ` -b ${hideCodes}`;
+
+    // Status code filtering
+    if (statusCodes) {
+      cmd += ` -s ${statusCodes}`;
+    }
+    if (hideCodes) {
+      cmd += ` -b ${hideCodes}`;
+    }
+
+    // Output options
     if (showFullUrl) cmd += ' -e';
     if (quietMode) cmd += ' -q';
     if (noProgress) cmd += ' -z';
     if (outputFile) cmd += ` -o ${outputFile}`;
+
+    // Advanced options
     if (followRedirect) cmd += ' -r';
     if (skipSSL) cmd += ' -k';
     if (userAgent) cmd += ` -a "${userAgent}"`;
@@ -98,15 +146,14 @@ const AdvancedMode = () => {
     setCommand(cmd);
   };
 
-  const copyToClipboard = () => {
-    if (!command) return;
-    navigator.clipboard.writeText(command);
-    showNotification("Command copied to clipboard!");
-  };
-
-  const showNotification = (message) => {
-    setNotification(message);
-    setTimeout(() => setNotification(""), 3000);
+  const copyToClipboard = (text, index) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setNotification("Command copied to clipboard!");
+    setTimeout(() => {
+      setCopiedIndex(null);
+      setNotification("");
+    }, 2000);
   };
 
   const showTooltip = (event, text) => {
@@ -128,22 +175,9 @@ const AdvancedMode = () => {
     setShowAdvancedOptions(!showAdvancedOptions);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFileName(file.name);
-      setCustomWordlist(file.path || file.name);
-      showNotification("Custom wordlist selected");
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current.click();
-  };
-
   return (
     <div className="advanced-mode-container">
-      <div className="background-elements">
+      <div className="background-circles">
         <div className="circle circle-1"></div>
         <div className="circle circle-2"></div>
         <div className="circle circle-3"></div>
@@ -151,7 +185,7 @@ const AdvancedMode = () => {
 
       <div className="advanced-mode-content">
         <h2 className="mode-title">
-          Advanced <span className="accent-text">Gobuster</span> Generator
+          Advanced <span style={{ color: '#64ffda', fontWeight: 'bold' }}>Gobuster</span> Generator
         </h2>
         <p className="mode-description">
           Customize your Gobuster command with advanced options for directory, vhost, and DNS brute-forcing.
@@ -159,31 +193,36 @@ const AdvancedMode = () => {
 
         <div className="form-grid">
           {/* Basic Options */}
-          <div className="form-group" data-type="text">
-            <label htmlFor="target">Target URL</label>
-            <div className="input-with-icon">
-              <input
-                id="target"
-                type="text"
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-                placeholder="http://example.com"
-                className="form-control"
+          <div className="form-group">
+            <label>
+              Target URL
+              <FaInfoCircle 
+                className="info-icon"
+                onMouseEnter={(e) => showTooltip(e, "The target URL to scan (e.g., http://example.com)")}
+                onMouseLeave={hideTooltip}
               />
-            </div>
-            <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "The target URL to scan (e.g., http://example.com)")} onMouseLeave={hideTooltip}>
-              <FaInfoCircle className="info-icon" />
-            </div>
+            </label>
+            <input
+              type="text"
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              placeholder="http://example.com"
+            />
           </div>
 
-          <div className="form-group" data-type="select">
-            <label htmlFor="wordlist">Predefined Wordlists</label>
+          <div className="form-group">
+            <label>
+              Predefined Wordlists
+              <FaInfoCircle 
+                className="info-icon"
+                onMouseEnter={(e) => showTooltip(e, "Select from common wordlists or specify a custom path below")}
+                onMouseLeave={hideTooltip}
+              />
+            </label>
             <select
-              id="wordlist"
               value={wordlist}
               onChange={(e) => setWordlist(e.target.value)}
               disabled={!!customWordlist}
-              className="form-control"
             >
               <option value="">Select a wordlist</option>
               <optgroup label="Dirb Wordlists">
@@ -206,117 +245,112 @@ const AdvancedMode = () => {
                 <option value={gobusterWordlists.joomla}>Joomla</option>
               </optgroup>
             </select>
-            <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Select from common wordlists or specify a custom path below")} onMouseLeave={hideTooltip}>
-              <FaInfoCircle className="info-icon" />
-            </div>
           </div>
 
-          <div className="form-group" data-type="file">
-            <label>Custom Wordlist</label>
-            <div className="file-input-wrapper">
-              <input 
-                type="file" 
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
+          <div className="form-group">
+            <label>
+              Custom Wordlist Path
+              <FaInfoCircle 
+                className="info-icon"
+                onMouseEnter={(e) => showTooltip(e, "Specify a custom wordlist path (overrides predefined selection)")}
+                onMouseLeave={hideTooltip}
               />
-              <div className="file-input-label" onClick={triggerFileInput}>
-                {fileName ? (
-                  <span className="file-name">{fileName}</span>
-                ) : (
-                  <>
-                    <FaFileUpload className="upload-icon" />
-                    <span className="file-input-text">Click to upload wordlist</span>
-                    <span className="file-input-hint">or drag and drop</span>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Upload a custom wordlist file")} onMouseLeave={hideTooltip}>
-              <FaInfoCircle className="info-icon" />
-            </div>
+            </label>
+            <input
+              type="text"
+              value={customWordlist}
+              onChange={(e) => setCustomWordlist(e.target.value)}
+              placeholder="/path/to/wordlist.txt"
+            />
           </div>
 
-          <div className="form-group" data-type="text">
-            <label htmlFor="extensions">File Extensions</label>
+          <div className="form-group">
+            <label>
+              File Extensions
+              <FaInfoCircle 
+                className="info-icon"
+                onMouseEnter={(e) => showTooltip(e, "Comma-separated list of extensions to check (e.g., php,html,txt)")}
+                onMouseLeave={hideTooltip}
+              />
+            </label>
             <input
-              id="extensions"
               type="text"
               value={extensions}
               onChange={(e) => setExtensions(e.target.value)}
               placeholder="php,html,txt"
-              className="form-control"
             />
-            <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Comma-separated list of extensions to check (e.g., php,html,txt)")} onMouseLeave={hideTooltip}>
-              <FaInfoCircle className="info-icon" />
-            </div>
           </div>
 
           {/* Performance Options */}
-          <div className="form-group" data-type="number">
-            <label htmlFor="threads">Threads</label>
-            <div className="range-input-wrapper">
-              <input
-                id="threads"
-                type="range"
-                min="1"
-                max="100"
-                value={threads}
-                onChange={(e) => setThreads(e.target.value)}
-                className="range-slider"
+          <div className="form-group">
+            <label>
+              Threads
+              <FaInfoCircle 
+                className="info-icon"
+                onMouseEnter={(e) => showTooltip(e, "Number of concurrent threads (default: 10)")}
+                onMouseLeave={hideTooltip}
               />
-              <span className="range-value">{threads}</span>
-            </div>
-            <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Number of concurrent threads (default: 10)")} onMouseLeave={hideTooltip}>
-              <FaInfoCircle className="info-icon" />
-            </div>
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="1000"
+              value={threads}
+              onChange={(e) => setThreads(e.target.value)}
+            />
           </div>
 
-          <div className="form-group" data-type="number">
-            <label htmlFor="timeout">Timeout (seconds)</label>
+          <div className="form-group">
+            <label>
+              Timeout (seconds)
+              <FaInfoCircle 
+                className="info-icon"
+                onMouseEnter={(e) => showTooltip(e, "Timeout for requests in seconds (default: 10)")}
+                onMouseLeave={hideTooltip}
+              />
+            </label>
             <input
-              id="timeout"
               type="number"
               min="1"
               max="60"
               value={timeout}
               onChange={(e) => setTimeout(e.target.value)}
-              className="form-control"
             />
-            <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Timeout for requests in seconds (default: 10)")} onMouseLeave={hideTooltip}>
-              <FaInfoCircle className="info-icon" />
-            </div>
           </div>
 
           {/* Status Code Filtering */}
-          <div className="form-group" data-type="text">
-            <label htmlFor="statusCodes">Show Status Codes</label>
+          <div className="form-group">
+            <label>
+              Show Status Codes
+              <FaInfoCircle 
+                className="info-icon"
+                onMouseEnter={(e) => showTooltip(e, "Comma-separated status codes to show (default: 200,204,301,302,307,401,403)")}
+                onMouseLeave={hideTooltip}
+              />
+            </label>
             <input
-              id="statusCodes"
               type="text"
               value={statusCodes}
               onChange={(e) => setStatusCodes(e.target.value)}
               placeholder="200,301,302"
-              className="form-control"
             />
-            <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Comma-separated status codes to show (default: 200,204,301,302,307,401,403)")} onMouseLeave={hideTooltip}>
-              <FaInfoCircle className="info-icon" />
-            </div>
           </div>
 
-          <div className="form-group" data-type="text">
-            <label htmlFor="hideCodes">Hide Status Codes</label>
+          <div className="form-group">
+            <label>
+              Hide Status Codes
+              <FaInfoCircle 
+                className="info-icon"
+                onMouseEnter={(e) => showTooltip(e, "Comma-separated status codes to hide (default: 404)")}
+                onMouseLeave={hideTooltip}
+              />
+            </label>
             <input
-              id="hideCodes"
               type="text"
               value={hideCodes}
               onChange={(e) => setHideCodes(e.target.value)}
               placeholder="404"
-              className="form-control"
             />
-            <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Comma-separated status codes to hide (default: 404)")} onMouseLeave={hideTooltip}>
-              <FaInfoCircle className="info-icon" />
-            </div>
           </div>
 
           {/* Toggle for Advanced Options */}
@@ -328,151 +362,152 @@ const AdvancedMode = () => {
           {/* Advanced Options */}
           {showAdvancedOptions && (
             <>
-              <div className="toggle-group">
-                <div className="toggle-item">
-                  <label className="toggle-label">
-                    Show Full URLs
-                    <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Show full URLs in output (-e flag)")} onMouseLeave={hideTooltip}>
-                      <FaInfoCircle className="info-icon" />
-                    </div>
-                  </label>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={showFullUrl}
-                      onChange={(e) => setShowFullUrl(e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
-
-                <div className="toggle-item">
-                  <label className="toggle-label">
-                    Quiet Mode
-                    <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Don't print banner and progress (-q flag)")} onMouseLeave={hideTooltip}>
-                      <FaInfoCircle className="info-icon" />
-                    </div>
-                  </label>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={quietMode}
-                      onChange={(e) => setQuietMode(e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
-
-                <div className="toggle-item">
-                  <label className="toggle-label">
-                    No Progress
-                    <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Don't display progress (-z flag)")} onMouseLeave={hideTooltip}>
-                      <FaInfoCircle className="info-icon" />
-                    </div>
-                  </label>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={noProgress}
-                      onChange={(e) => setNoProgress(e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
-
-                <div className="toggle-item">
-                  <label className="toggle-label">
-                    Follow Redirects
-                    <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Follow redirects (-r flag)")} onMouseLeave={hideTooltip}>
-                      <FaInfoCircle className="info-icon" />
-                    </div>
-                  </label>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={followRedirect}
-                      onChange={(e) => setFollowRedirect(e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
-
-                <div className="toggle-item">
-                  <label className="toggle-label">
-                    Skip SSL Verification
-                    <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Skip SSL certificate verification (-k flag)")} onMouseLeave={hideTooltip}>
-                      <FaInfoCircle className="info-icon" />
-                    </div>
-                  </label>
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={skipSSL}
-                      onChange={(e) => setSkipSSL(e.target.checked)}
-                    />
-                    <span className="toggle-slider"></span>
-                  </label>
-                </div>
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={showFullUrl}
+                    onChange={(e) => setShowFullUrl(e.target.checked)}
+                  />
+                  Show Full URLs
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "Show full URLs in output (-e flag)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
               </div>
 
-              <div className="form-group" data-type="text">
-                <label htmlFor="outputFile">Output File</label>
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={quietMode}
+                    onChange={(e) => setQuietMode(e.target.checked)}
+                  />
+                  Quiet Mode
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "Don't print banner and progress (-q flag)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={noProgress}
+                    onChange={(e) => setNoProgress(e.target.checked)}
+                  />
+                  No Progress
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "Don't display progress (-z flag)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={followRedirect}
+                    onChange={(e) => setFollowRedirect(e.target.checked)}
+                  />
+                  Follow Redirects
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "Follow redirects (-r flag)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={skipSSL}
+                    onChange={(e) => setSkipSSL(e.target.checked)}
+                  />
+                  Skip SSL Verification
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "Skip SSL certificate verification (-k flag)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Output File
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "File to write output to (-o flag)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
                 <input
-                  id="outputFile"
                   type="text"
                   value={outputFile}
                   onChange={(e) => setOutputFile(e.target.value)}
                   placeholder="results.txt"
-                  className="form-control"
                 />
-                <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "File to write output to (-o flag)")} onMouseLeave={hideTooltip}>
-                  <FaInfoCircle className="info-icon" />
-                </div>
               </div>
 
-              <div className="form-group" data-type="text">
-                <label htmlFor="userAgent">User Agent</label>
+              <div className="form-group">
+                <label>
+                  User Agent
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "Set custom User-Agent (-a flag)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
                 <input
-                  id="userAgent"
                   type="text"
                   value={userAgent}
                   onChange={(e) => setUserAgent(e.target.value)}
                   placeholder="Custom User Agent"
-                  className="form-control"
                 />
-                <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Set custom User-Agent (-a flag)")} onMouseLeave={hideTooltip}>
-                  <FaInfoCircle className="info-icon" />
-                </div>
               </div>
 
-              <div className="form-group" data-type="textarea">
-                <label htmlFor="customHeaders">Custom Headers</label>
+              <div className="form-group">
+                <label>
+                  Custom Headers
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "One header per line (e.g., X-API-Key: value)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
                 <textarea
-                  id="customHeaders"
                   value={customHeaders}
                   onChange={(e) => setCustomHeaders(e.target.value)}
                   placeholder="X-API-Key: value\nAuthorization: Bearer token"
-                  className="form-control"
                   rows="3"
                 />
-                <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "One header per line (e.g., X-API-Key: value)")} onMouseLeave={hideTooltip}>
-                  <FaInfoCircle className="info-icon" />
-                </div>
               </div>
 
-              <div className="form-group" data-type="text">
-                <label htmlFor="proxy">Proxy</label>
+              <div className="form-group">
+                <label>
+                  Proxy
+                  <FaInfoCircle 
+                    className="info-icon"
+                    onMouseEnter={(e) => showTooltip(e, "Proxy to use for requests (e.g., http://proxy:8080)")}
+                    onMouseLeave={hideTooltip}
+                  />
+                </label>
                 <input
-                  id="proxy"
                   type="text"
                   value={proxy}
                   onChange={(e) => setProxy(e.target.value)}
                   placeholder="http://proxy:8080"
-                  className="form-control"
                 />
-                <div className="info-hover" onMouseEnter={(e) => showTooltip(e, "Proxy to use for requests (e.g., http://proxy:8080)")} onMouseLeave={hideTooltip}>
-                  <FaInfoCircle className="info-icon" />
-                </div>
               </div>
             </>
           )}

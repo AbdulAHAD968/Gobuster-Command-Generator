@@ -34,7 +34,7 @@
   color: #ccd6f6; /* Light blue-gray */
   text-align: center;
   margin-bottom: 1.5rem;
-  font-size: 1rem;
+  font-size: 1.4rem;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -76,7 +76,7 @@
 .command-header h4 {
   margin: 0;
   color: #e6f1ff; /* Bright white */
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 600;
 }
 
@@ -99,7 +99,7 @@
 
 .command-text {
   font-family: 'Roboto Mono', monospace;
-  font-size: 0.85rem;
+  font-size: 1.3rem;
   color: #64ffda; /* Teal for code */
   white-space: nowrap;
   display: inline-block;
@@ -228,6 +228,7 @@
   height: 100%;
   overflow: hidden;
   z-index: 0;
+  border-radius: 10px;
 }
 
 .background-circles .circle {
@@ -329,7 +330,7 @@
   }
 
   .command-text {
-    font-size: 1rem;
+    font-size: 1.15rem;
   }
   
   .command-text-container {
@@ -366,7 +367,7 @@
   }
   
   .command-text {
-    font-size: 0.7rem;
+    font-size: 1rem;
   }
   
   .command-text-container {
